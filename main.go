@@ -26,7 +26,9 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        fmt.Fprintf(w, "Received JSON from pod '%+v': %+v\n", getCurrentPodName(), message_request)
+        response_message := fmt.Sprintf("Received JSON from pod '%+v': %+v\n", getCurrentPodName(), message_request)
+        fmt.Fprintf(w, "%s", response_message)
+        fmt.Println(response_message)
     } else {
         http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
     }
@@ -65,7 +67,7 @@ func sendMessage() {
         return
     }
 
-    _, err = http.Post("messaging-app/message", "application/json", bytes.NewBuffer(json_data))
+    _, err = http.Post("http://msg-app/message", "application/json", bytes.NewBuffer(json_data))
     if err != nil {
         fmt.Println("Error sending messaging over HTTP:", err)
         return
