@@ -105,7 +105,6 @@ func retrieveAllPodIPsWithK3sApi(clientset *kubernetes.Clientset) ([]string, err
 	// Or specify namespace to get pods in particular namespace
 	pods, err := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{
 		LabelSelector: "app=msg-app",
-        
 	})
 	if err != nil {
 		return nil, err
