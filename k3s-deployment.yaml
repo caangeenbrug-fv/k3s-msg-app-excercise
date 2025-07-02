@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msg-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: msg-app
+  template:
+    metadata:
+      labels:
+        app: msg-app
+    spec:
+      containers:
+        - name: msg-app
+          image: caangeenbrug-fv/msg-app:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: msg-app
+spec:
+  type: ClusterIP
+  selector:
+    app: msg-app
+  ports:
+    - port: 80
+      targetPort: 8080
