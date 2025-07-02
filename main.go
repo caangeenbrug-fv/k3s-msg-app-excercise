@@ -68,7 +68,8 @@ func sendMessage() {
         return
     }
 
-    ips, err := net.LookupHost("msg-app-headless")
+    // ips, err := retrieveAllPodIPs()
+    ips, err := retrieveAllPodIPsWithK3sApi()
     if err != nil {
         fmt.Println("Error when looking up msg-app pod IPs")
         return
@@ -89,6 +90,14 @@ func sendMessage() {
             fmt.Printf("Skipping sender pod with IP '%+v'\n", pod_ip)
         }
     }
+}
+
+func retrieveAllPodIPs() ([]string, error) {
+    return net.LookupHost("msg-app-headless")
+}
+
+func retrieveAllPodIPsWithK3sApi() ([]string, error) {
+    res, err = http.Get("http://msg-app.my-namespace.svc.cluster.local")
 }
 
 func main() {
