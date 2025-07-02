@@ -77,7 +77,8 @@ func sendMessage() {
     pod_ip := os.Getenv("POD_IP")
     for _, ip := range ips {
         if ip != pod_ip {
-            _, err = http.Post("http://msg-app/message", "application/json", bytes.NewBuffer(json_data))
+            url := fmt.Sprintf("http://%s:8080/message", ip)
+            _, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
             if err != nil {
                 fmt.Println("Error sending messaging over HTTP:", err)
                 return
