@@ -89,7 +89,7 @@ func sendMessage(clientset *kubernetes.Clientset) {
 				return
 			}
 
-			fmt.Printf("Sent message over HTTP to pod with IP '%+v'\n", pod_ip)
+			fmt.Printf("Sent message over HTTP to pod with IP '%+v'\n", ip)
 		} else {
 			fmt.Printf("Skipping sender pod with IP '%+v'\n", pod_ip)
 		}
