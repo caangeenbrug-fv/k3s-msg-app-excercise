@@ -7,6 +7,7 @@ import (
     "log"
     "time"
     "bytes"
+    "net"
     "net/http"
 )
 
@@ -67,13 +68,26 @@ func sendMessage() {
         return
     }
 
-    _, err = http.Post("http://msg-app/message", "application/json", bytes.NewBuffer(json_data))
+    ips, err := net.LookupHost("msg-app-headless")
     if err != nil {
-        fmt.Println("Error sending messaging over HTTP:", err)
+        fmt.Println("Error when looking up msg-app pod IPs")
         return
     }
 
-    fmt.Println("Sent message over HTTP")
+    pod_ip := os.Getenv("POD_IP")
+    for _, ip := range ips {
+        if ip != pod_ip {
+            _, err = http.Post("http://msg-app/message", "application/json", bytes.NewBuffer(json_data))
+            if err != nil {
+                fmt.Println("Error sending messaging over HTTP:", err)
+                return
+            }
+
+            fmt.Printf("Sent message over HTTP to pod with IP '%+v'\n", pod_ip)
+        } else {
+            fmt.Printf("Skipping sender pod with IP '%+v'\n", pod_ip)
+        }
+    }
 }
 
 func main() {
