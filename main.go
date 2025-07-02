@@ -65,7 +65,13 @@ func sendMessage() {
         return
     }
 
-    http.Post("messaging-app/message", "application/json", bytes.NewBuffer(json_data))
+    _, err = http.Post("messaging-app/message", "application/json", bytes.NewBuffer(json_data))
+    if err != nil {
+        fmt.Println("Error sending messaging over HTTP:", err)
+        return
+    }
+
+    fmt.Println("Sent message over HTTP")
 }
 
 func main() {
