@@ -1,18 +1,12 @@
-FROM golang:1.24.4-alpine3.22 AS builder
-
-WORKDIR /app
-
+FROM --platform=$BUILDPLATFORM golang:1.24.4-alpine3.22 AS builder
+WORKDIR /src
 COPY . .
-
-RUN go build -o app
-
+ARG TARGETOS
+ARG TARGETARCH
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o app
 
 FROM alpine:3.22
-
 WORKDIR /app
-
-COPY --from=builder /app/app .
-
+COPY --from=builder /src/app .
 EXPOSE 8080
-
 CMD ["./app"]
