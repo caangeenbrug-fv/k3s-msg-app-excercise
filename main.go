@@ -25,6 +25,10 @@ type MessageRequest struct {
     SenderIp string `json:"sender_ip"`
 }
 
+type CustomMessageRequest struct {
+	Message string   `json:"message"`
+}
+
 func messageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		var message_request MessageRequest
@@ -32,7 +36,7 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 		err := decoder.Decode(&message_request)
 
 		if err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("Invalid JSON: %e", err), http.StatusBadRequest)
 			return
 		}
 
@@ -44,7 +48,25 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
         time.Sleep(1000 * time.Millisecond)
 
-		sendMessage(message_request.Trace, message_request.SenderIp)
+		sendMessage(message_request.Message, message_request.Trace, message_request.SenderIp)
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}
+
+
+func createMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		var message_request CustomMessageRequest
+		decoder := json.NewDecoder(r.Body)
+
+		err := decoder.Decode(&message_request)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Invalid JSON: %e", err), http.StatusBadRequest)
+			return
+		}
+
+		sendMessage(message_request.Message, []string{}, "null")
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
@@ -61,6 +83,7 @@ func getCurrentPodName() string {
 
 func hostServer() {
 	http.HandleFunc("/message", messageHandler)
+    http.HandleFunc("/custom-message", createMessageHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -71,11 +94,11 @@ func hostServer() {
 // 	}
 // }
 
-func sendMessage(trace []string, previous_sender_ip string) error {
+func sendMessage(message string, trace []string, previous_sender_ip string) error {
     pod_ip := os.Getenv("POD_IP")
 
 	message_request := MessageRequest{
-		Message: "Hello",
+		Message: message,
 		Trace:   append(trace, getCurrentPodName()),
         SenderIp: pod_ip,
 	}
@@ -215,7 +238,7 @@ func main() {
     time.Sleep(8000 * time.Millisecond)
 
     // go randomlySendMessagesAround(clientset)
-	err = sendMessage([]string{}, "null")
+	err = sendMessage("Hello from pod " + getCurrentPodName(), []string{}, "null")
     if err != nil {
         fmt.Println("Something went wrong when attempting to send a message: ", err)
     }
