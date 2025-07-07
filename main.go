@@ -115,8 +115,12 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 	pod_ip := os.Getenv("POD_IP")
 
 	new_trace := append(trace, getCurrentPodName())
-	// Do not store more than 10 pod names in the trace and remove excess names from the start of the trace
-	new_trace = new_trace[len(trace)-10:]
+	max_trace_len := 10
+
+	if (len(new_trace) > max_trace_len) {
+		// Do not store more than 10 pod names in the trace and remove excess names from the start of the trace
+		new_trace = new_trace[len(trace)-max_trace_len:]
+	}
 
 	message_request := MessageRequest{
 		Message:  message,
