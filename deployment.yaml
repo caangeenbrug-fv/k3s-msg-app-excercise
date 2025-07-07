@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: msg-app
+  name: msg-app-deployment
 spec:
   replicas: 3
   selector:
@@ -29,7 +29,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: msg-app
+  name: msg-app-service
 spec:
   type: ClusterIP
   selector:
@@ -73,3 +73,20 @@ roleRef:
   kind: Role
   name: pod-reader
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+spec:
+  rules:
+    - host: casperflikweert.net
+      http:
+        paths:
+          - path: /msg-app
+            pathType: Prefix
+            backend:
+              service:
+                name: msg-app-service
+                port:
+                  number: 80

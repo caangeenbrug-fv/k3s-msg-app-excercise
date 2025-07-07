@@ -20,13 +20,13 @@ var config *rest.Config
 var clientset *kubernetes.Clientset
 
 type MessageRequest struct {
-	Message string   `json:"message"`
-	Trace   []string `json:"trace"`
-    SenderIp string `json:"sender_ip"`
+	Message  string   `json:"message"`
+	Trace    []string `json:"trace"`
+	SenderIp string   `json:"sender_ip"`
 }
 
 type CustomMessageRequest struct {
-	Message string   `json:"message"`
+	Message string `json:"message"`
 }
 
 func messageHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,14 +46,13 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("Sending message to next pod")
 
-        time.Sleep(1000 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 
 		sendMessage(message_request.Message, message_request.Trace, message_request.SenderIp)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
-
 
 func createMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
@@ -67,6 +66,14 @@ func createMessageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		sendMessage(message_request.Message, []string{}, "null")
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}
+
+func createHealthCheckMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		fmt.Fprintf(w, "Pod is running")
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
@@ -92,7 +99,8 @@ func getLabelSelector() string {
 
 func hostServer() {
 	http.HandleFunc("/message", messageHandler)
-    http.HandleFunc("/custom-message", createMessageHandler)
+	http.HandleFunc("/custom-message", createMessageHandler)
+	http.HandleFunc("/healthcheck", createHealthCheckMessageHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -104,12 +112,16 @@ func hostServer() {
 // }
 
 func sendMessage(message string, trace []string, previous_sender_ip string) error {
-    pod_ip := os.Getenv("POD_IP")
+	pod_ip := os.Getenv("POD_IP")
+
+	new_trace := append(trace, getCurrentPodName())
+	// Do not store more than 10 pod names in the trace and remove excess names from the start of the trace
+	new_trace = new_trace[len(trace)-10:]
 
 	message_request := MessageRequest{
-		Message: message,
-		Trace:   append(trace, getCurrentPodName()),
-        SenderIp: pod_ip,
+		Message:  message,
+		Trace:    new_trace,
+		SenderIp: pod_ip,
 	}
 
 	json_data, err := json.Marshal(message_request)
@@ -152,17 +164,17 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 	// 	}
 	// }
 
-    var next_ip string;
-    if previous_sender_ip != "null" {
-        last_ip_index, err := indexOf(ips, previous_sender_ip)
-        if err != nil {
-            return fmt.Errorf("failed to find the next IP address to send message to")
-        }
+	var next_ip string
+	if previous_sender_ip != "null" {
+		last_ip_index, err := indexOf(ips, previous_sender_ip)
+		if err != nil {
+			return fmt.Errorf("failed to find the next IP address to send message to")
+		}
 
-        next_ip = ips[(last_ip_index+1)%len(ips)]
-    } else {
-        next_ip = ips[0]
-    }
+		next_ip = ips[(last_ip_index+1)%len(ips)]
+	} else {
+		next_ip = ips[0]
+	}
 
 	url := fmt.Sprintf("http://%s:8080/message", next_ip)
 	_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
@@ -172,7 +184,7 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 
 	fmt.Printf("Sent message over HTTP to pod with IP '%+v'\n", next_ip)
 
-    return nil
+	return nil
 }
 
 // Compare two net.IPs as bytes
@@ -246,13 +258,13 @@ func main() {
 		panic(err.Error())
 	}
 
-    go hostServer()
+	go hostServer()
 
-    time.Sleep(8000 * time.Millisecond)
+	time.Sleep(8000 * time.Millisecond)
 
-    // go randomlySendMessagesAround(clientset)
-	err = sendMessage("Hello from pod " + getCurrentPodName(), []string{}, "null")
-    if err != nil {
-        fmt.Println("Something went wrong when attempting to send a message: ", err)
-    }
+	// go randomlySendMessagesAround(clientset)
+	err = sendMessage("Hello from pod "+getCurrentPodName(), []string{}, "null")
+	if err != nil {
+		fmt.Println("Something went wrong when attempting to send a message: ", err)
+	}
 }
