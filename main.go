@@ -81,6 +81,15 @@ func getCurrentPodName() string {
 	return pod_name
 }
 
+func getLabelSelector() string {
+	label_selector := os.Getenv("APP_NAME")
+	if label_selector == "" {
+		log.Fatal("APP_NAME is not set")
+	}
+
+	return label_selector
+}
+
 func hostServer() {
 	http.HandleFunc("/message", messageHandler)
     http.HandleFunc("/custom-message", createMessageHandler)
@@ -210,7 +219,7 @@ func retrieveAllPodIPsWithK3sApi() ([]string, error) {
 	// get pods in all the namespaces by omitting namespace
 	// Or specify namespace to get pods in particular namespace
 	pods, err := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{
-		LabelSelector: "app=msg-app",
+		LabelSelector: fmt.Sprintf("app=%s", getLabelSelector()),
 	})
 	if err != nil {
 		return nil, err

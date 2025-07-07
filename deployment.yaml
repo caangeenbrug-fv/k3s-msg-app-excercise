@@ -23,6 +23,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: APP_NAME
+              value: msg-app
 ---
 apiVersion: v1
 kind: Service
