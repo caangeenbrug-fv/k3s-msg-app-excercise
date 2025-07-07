@@ -116,6 +116,10 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 
 	ips = filter(ips, pod_ip)
 
+	if len(ips) == 0 {
+		return nil
+	}
+
 	// Ensure that IPs are sorted
 	sort.Slice(ips, func(i, j int) bool {
 		ip1 := net.ParseIP(ips[i])
