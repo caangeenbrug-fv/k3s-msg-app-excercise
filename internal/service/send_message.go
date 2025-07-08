@@ -96,8 +96,6 @@ func getNextPodIP(previous_sender_ip string) (string, error) {
 		return "", fmt.Errorf("next pod IP was not found")
 	}
 
-	fmt.Printf("POD IPS: %s\n", ips)
-
 	// Ensure that IPs are sorted
 	sort.Slice(ips, func(i, j int) bool {
 		ip1 := net.ParseIP(ips[i])
