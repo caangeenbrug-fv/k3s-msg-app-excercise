@@ -104,12 +104,16 @@ func hostServer() {
 	http.ListenAndServe(":8080", nil)
 }
 
-// func randomlySendMessagesAround(clientset *kubernetes.Clientset) {
-// 	for {
-// 		time.Sleep(5000)
-// 		sendMessage(clientset)
-// 	}
-// }
+func randomlySendMessagesAround() {
+	for i := 0; i < 10; i++ {
+		err := sendMessage(fmt.Sprintf("Sending message from pod %s\n", getCurrentPodName()), []string {}, "null")
+		if err != nil {
+			log.Printf("Failed to send message: %e\n", err)
+		}
+
+		time.Sleep(5000)
+	}
+}
 
 func sendMessage(message string, trace []string, previous_sender_ip string) error {
 	pod_ip := os.Getenv("POD_IP")
@@ -250,6 +254,8 @@ func retrieveAllPodIPsWithK3sApi() ([]string, error) {
 }
 
 func main() {
+	log.Println("Started main thread")
+
 	var err error
 	// creates the in-cluster config
 	config, err = rest.InClusterConfig()
@@ -262,16 +268,8 @@ func main() {
 		panic(err.Error())
 	}
 
-	go hostServer()
+	log.Println("Created Kubernetes client set")
 
-	time.Sleep(8000 * time.Millisecond)
-
-	// go randomlySendMessagesAround(clientset)
-	err = sendMessage("Hello from pod "+getCurrentPodName(), []string{}, "null")
-	if err != nil {
-		log.Fatal("Something went wrong when attempting to send a message: ", err)
-	}
-
-	// Keep the app running forever
-	select {}
+	go randomlySendMessagesAround()
+	hostServer()
 }

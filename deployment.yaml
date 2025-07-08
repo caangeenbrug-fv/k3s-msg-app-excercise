@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: msg-app
-          image: flikweertvision/msg-app-excercise:0.0.8
+          image: flikweertvision/msg-app-excercise:0.0.9
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
