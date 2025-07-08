@@ -41,10 +41,10 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		response_message := fmt.Sprintf("Received JSON from pod '%+v': %+v\n", getCurrentPodName(), message_request)
-		fmt.Fprintf(w, "%s", response_message)
-		fmt.Println(response_message)
+		log.Printf("%s\n", response_message)
+		log.Println(response_message)
 
-		fmt.Println("Sending message to next pod")
+		log.Println("Sending message to next pod")
 
 		time.Sleep(1000 * time.Millisecond)
 
@@ -73,7 +73,7 @@ func createMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 func createHealthCheckMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		fmt.Fprintf(w, "Pod is running")
+		log.Println("Pod is running")
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
@@ -186,7 +186,7 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 		return fmt.Errorf("error sending messaging over HTTP: %w", err)
 	}
 
-	fmt.Printf("Sent message over HTTP to pod with IP '%+v'\n", next_ip)
+	log.Printf("Sent message over HTTP to pod with IP '%+v'\n", next_ip)
 
 	return nil
 }
@@ -269,7 +269,7 @@ func main() {
 	// go randomlySendMessagesAround(clientset)
 	err = sendMessage("Hello from pod "+getCurrentPodName(), []string{}, "null")
 	if err != nil {
-		fmt.Println("Something went wrong when attempting to send a message: ", err)
+		log.Fatal("Something went wrong when attempting to send a message: ", err)
 	}
 
 	// Keep the app running forever
