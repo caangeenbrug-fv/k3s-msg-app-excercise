@@ -188,7 +188,7 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 		next_ip = ips[0]
 	}
 
-	url := fmt.Sprintf("http://%s:8080/message", next_ip)
+	url := fmt.Sprintf("http://%s/message", next_ip)
 	_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
 	if err != nil {
 		return fmt.Errorf("error sending messaging over HTTP: %w", err)
