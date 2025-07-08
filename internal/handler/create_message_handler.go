@@ -2,10 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"example.com/messaging-app/internal/model"
+	"example.com/messaging-app/internal/service"
 	"fmt"
 	"net/http"
-    "example.com/messaging-app/internal/model"
-    "example.com/messaging-app/internal/service"
 )
 
 func CreateNewMessageHandler(w http.ResponseWriter, r *http.Request) {

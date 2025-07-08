@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"sort"
 
+	"example.com/messaging-app/internal/config"
 	"example.com/messaging-app/internal/model"
 	"example.com/messaging-app/internal/util"
-    "example.com/messaging-app/internal/config"
 )
 
 func SendMessage(message string, trace []string, previous_sender_ip string) error {
@@ -39,7 +39,7 @@ func sendNewMessage(message string) error {
 	}
 
 	for _, ip := range ips {
-        // This sends to a service, which is bound to port 80
+		// This sends to a service, which is bound to port 80
 		url := fmt.Sprintf("http://%s/message", ip)
 		_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
 		if err != nil {
@@ -72,8 +72,8 @@ func sendMessageToNextPod(message string, trace []string, previous_sender_ip str
 		return fmt.Errorf("failed to get next pod IP: %w", err)
 	}
 
-    // TODO: FIX THE FUCKING TIMEOUT
-    // THis sends directly to a pod, which is listening to port 8080
+	// TODO: FIX THE FUCKING TIMEOUT
+	// THis sends directly to a pod, which is listening to port 8080
 	url := fmt.Sprintf("http://%s:%s/message", next_ip, config.GetPort())
 	_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
 	if err != nil {
@@ -96,7 +96,7 @@ func getNextPodIP(previous_sender_ip string) (string, error) {
 		return "", fmt.Errorf("next pod IP was not found")
 	}
 
-    fmt.Printf("POD IPS: %s\n", ips)
+	fmt.Printf("POD IPS: %s\n", ips)
 
 	// Ensure that IPs are sorted
 	sort.Slice(ips, func(i, j int) bool {
@@ -110,10 +110,10 @@ func getNextPodIP(previous_sender_ip string) (string, error) {
 		return "", fmt.Errorf("failed to find the next IP address to send message to")
 	}
 
-    next_pod_ip_index := (last_ip_index+1)%len(ips)
-    if next_pod_ip_index > len(ips)-1 || next_pod_ip_index < 0 {
-        return "", fmt.Errorf("next pod IP index %d is out of range for IPs slice %s", next_pod_ip_index, ips)
-    }
+	next_pod_ip_index := (last_ip_index + 1) % len(ips)
+	if next_pod_ip_index > len(ips)-1 || next_pod_ip_index < 0 {
+		return "", fmt.Errorf("next pod IP index %d is out of range for IPs slice %s", next_pod_ip_index, ips)
+	}
 
 	return ips[next_pod_ip_index], nil
 }

@@ -2,11 +2,11 @@ package util
 
 import (
 	"context"
+	"example.com/messaging-app/internal/config"
 	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net"
 	"os"
-	"example.com/messaging-app/internal/config"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func GetAllPodIPs() ([]string, error) {

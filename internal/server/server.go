@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"example.com/messaging-app/internal/config"
 	"example.com/messaging-app/internal/handler"
-    "example.com/messaging-app/internal/config"
 )
 
 func Host() error {

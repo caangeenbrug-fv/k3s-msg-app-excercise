@@ -1,5 +1,5 @@
 package config
 
 func GetPort() string {
-    return "8080"
+	return "8080"
 }
