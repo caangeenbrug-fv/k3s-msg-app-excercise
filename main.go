@@ -101,7 +101,11 @@ func hostServer() {
 	http.HandleFunc("/message", messageHandler)
 	http.HandleFunc("/custom-message", createMessageHandler)
 	http.HandleFunc("/healthcheck", createHealthCheckMessageHandler)
-	http.ListenAndServe(":8080", nil)
+
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatalf("Failed to host HTTP server: %e\n", err)
+	}
 }
 
 func randomlySendMessagesAround() {
@@ -272,4 +276,6 @@ func main() {
 
 	go randomlySendMessagesAround()
 	hostServer()
+
+	log.Println("Exiting main thread")
 }
