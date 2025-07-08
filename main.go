@@ -271,4 +271,7 @@ func main() {
 	if err != nil {
 		fmt.Println("Something went wrong when attempting to send a message: ", err)
 	}
+
+	// Keep the app running forever
+	select {}
 }
