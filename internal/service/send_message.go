@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"net/http"
 	"sort"
 
 	"example.com/messaging-app/internal/config"
@@ -38,10 +37,11 @@ func sendNewMessage(message string) error {
 		return err
 	}
 
+	http_client := config.GetHttpClient()
 	for _, ip := range ips {
 		// This sends to a service, which is bound to port 80
 		url := fmt.Sprintf("http://%s/message", ip)
-		_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
+		_, err = http_client.Post(url, "application/json", bytes.NewBuffer(json_data))
 		if err != nil {
 			return fmt.Errorf("error sending messaging over HTTP: %w", err)
 		}
@@ -72,10 +72,10 @@ func sendMessageToNextPod(message string, trace []string, previous_sender_ip str
 		return fmt.Errorf("failed to get next pod IP: %w", err)
 	}
 
-	// TODO: FIX THE FUCKING TIMEOUT
-	// THis sends directly to a pod, which is listening to port 8080
+	// This sends directly to a pod, which is listening to port 8080
 	url := fmt.Sprintf("http://%s:%s/message", next_ip, config.GetPort())
-	_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
+	http_client := config.GetHttpClient()
+	_, err = http_client.Post(url, "application/json", bytes.NewBuffer(json_data))
 	if err != nil {
 		return fmt.Errorf("error sending messaging over HTTP: %w", err)
 	}

@@ -26,6 +26,8 @@ func main() {
 		panic(fmt.Sprintf("failed to load Kubernetes client: %e", err))
 	}
 
+	config.CreateHttpClient()
+
 	go randomlySendMessagesAround()
 	server.Host()
 }
