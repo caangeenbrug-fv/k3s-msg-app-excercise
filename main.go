@@ -48,7 +48,10 @@ func messageHandler(w http.ResponseWriter, r *http.Request) {
 
 		time.Sleep(1000 * time.Millisecond)
 
-		sendMessage(message_request.Message, message_request.Trace, message_request.SenderIp)
+		err = sendMessage(message_request.Message, message_request.Trace, message_request.SenderIp)
+		if err == nil {
+			log.Printf("failed to send message: %e", err)
+		}
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
@@ -65,7 +68,10 @@ func createMessageHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sendMessage(message_request.Message, []string{}, "null")
+		err = sendMessage(message_request.Message, []string{}, "null")
+		if err != nil {
+			log.Printf("failed to send message: %e", err)
+		}
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
@@ -106,16 +112,18 @@ func hostServer() {
 	if err != nil {
 		log.Fatalf("Failed to host HTTP server: %e\n", err)
 	}
+
+	log.Println("Hosting server...")
 }
 
 func randomlySendMessagesAround() {
 	for i := 0; i < 10; i++ {
 		err := sendMessage(fmt.Sprintf("Sending message from pod %s\n", getCurrentPodName()), []string {}, "null")
 		if err != nil {
-			log.Printf("Failed to send message: %e\n", err)
+			log.Printf("failed to send message: %e\n", err)
 		}
 
-		time.Sleep(5000)
+		time.Sleep(5000 * time.Millisecond)
 	}
 }
 
@@ -141,16 +149,21 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 		return fmt.Errorf("error serializing to JSON: %w", err)
 	}
 
-	// ips, err := retrieveAllPodIPs()
-	ips, err := retrieveAllPodIPsWithK3sApi()
+	var ips []string
+	// Send to service if previous sender is not known
+	if previous_sender_ip == "null" {
+		ips, err = getServiceIps()
+	} else {
+		ips, err = getAllPodIPs()
+		ips = filter(ips, pod_ip)
+	}
+	
 	if err != nil {
 		return fmt.Errorf("error when looking up msg-app pod IPs: %w", err)
 	}
 
-	ips = filter(ips, pod_ip)
-
 	if len(ips) == 0 {
-		return nil
+		return fmt.Errorf("loop is broken for some reason")
 	}
 
 	// Ensure that IPs are sorted
@@ -159,22 +172,6 @@ func sendMessage(message string, trace []string, previous_sender_ip string) erro
 		ip2 := net.ParseIP(ips[j])
 		return bytesCompare(ip1, ip2) < 0
 	})
-
-	// pod_ip := os.Getenv("POD_IP")
-	// for _, ip := range ips {
-	// 	if ip != pod_ip {
-	// 		url := fmt.Sprintf("http://%s:8080/message", ip)
-	// 		_, err = http.Post(url, "application/json", bytes.NewBuffer(json_data))
-	// 		if err != nil {
-	// 			fmt.Println("Error sending messaging over HTTP:", err)
-	// 			return
-	// 		}
-
-	// 		fmt.Printf("Sent message over HTTP to pod with IP '%+v'\n", ip)
-	// 	} else {
-	// 		fmt.Printf("Skipping sender pod with IP '%+v'\n", pod_ip)
-	// 	}
-	// }
 
 	var next_ip string
 	if previous_sender_ip != "null" {
@@ -235,26 +232,19 @@ func filter(collection []string, value string) []string {
 	return result
 }
 
-func retrieveAllPodIPs() ([]string, error) {
-	return net.LookupHost("msg-app-headless")
+func getAllPodIPs() ([]string, error) {
+	return net.LookupHost("msg-app-software-service-headless")
 }
 
-func retrieveAllPodIPsWithK3sApi() ([]string, error) {
+func getServiceIps() ([]string, error) {
 	// get pods in all the namespaces by omitting namespace
 	// Or specify namespace to get pods in particular namespace
-	pods, err := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app=%s", getLabelSelector()),
-	})
+	service, err := clientset.CoreV1().Services("default").Get(context.TODO(), fmt.Sprintf("%s-software-service", getLabelSelector()), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var ips []string = make([]string, len(pods.Items))
-	for i, pod := range pods.Items {
-		ips[i] = pod.Status.PodIP
-	}
-
-	return ips, nil
+	return service.Spec.ClusterIPs, nil
 }
 
 func main() {

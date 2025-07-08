@@ -1,9 +1,8 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: msg-app-deployment
 spec:
-  replicas: 3
   selector:
     matchLabels:
       app: msg-app
@@ -14,7 +13,7 @@ spec:
     spec:
       containers:
         - name: msg-app
-          image: flikweertvision/msg-app-excercise:0.0.11
+          image: flikweertvision/msg-app-excercise:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
@@ -29,7 +28,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: msg-app-service
+  name: msg-app-software-service
 spec:
   type: ClusterIP
   selector:
@@ -41,7 +40,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: msg-app-headless
+  name: msg-app-software-service-headless
 spec:
   clusterIP: None
   selector:
@@ -53,17 +52,17 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: pod-reader
+  name: reader-role
   namespace: default
 rules:
 - apiGroups: [""]
-  resources: ["pods"]
+  resources: ["pods", "services"]
   verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: default-pod-reader
+  name: default-reader-role
   namespace: default
 subjects:
 - kind: ServiceAccount
@@ -71,22 +70,23 @@ subjects:
   namespace: default
 roleRef:
   kind: Role
-  name: pod-reader
+  name: reader-role
   apiGroup: rbac.authorization.k8s.io
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ingress
-spec:
-  rules:
-    - host: casperflikweert.net
-      http:
-        paths:
-          - path: /msg-app
-            pathType: Prefix
-            backend:
-              service:
-                name: msg-app-service
-                port:
-                  number: 80
+### TODO: Traefik
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ingress
+# spec:
+#   rules:
+#     - host: casperflikweert.net
+#       http:
+#         paths:
+#           - path: /msg-app
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: msg-app-service
+#                 port:
+#                   number: 80
