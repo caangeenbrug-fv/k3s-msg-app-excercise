@@ -80,7 +80,3 @@ helm install traefik traefik/traefik -f values.yaml --wait
 - **Reliable Messaging**: In-cluster communication is robust and fault-tolerant, ensuring messages are delivered between pods.
 - **Automatic Image Pushing upon Release**: There is a GitHub workflow that leverage buildx to build and push images to a private Docker registry
 
-## Next Steps
-
-- For test machine deployment, repeat the above steps on your target machine with k3s or any compatible Kubernetes environment.
-- Adjust deployment scripts and manifests as needed for your specific environment or CI/CD pipeline.
