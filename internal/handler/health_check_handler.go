@@ -7,7 +7,7 @@ import (
 
 func CreateHealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		fmt.Println("Pod is running")
+        fmt.Fprintln(w, "Pod is running")
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
