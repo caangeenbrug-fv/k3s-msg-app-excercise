@@ -78,6 +78,7 @@ helm install traefik traefik/traefik -f values.yaml --wait
 
 - **Automatic Pod Discovery**: The app uses Kubernetes service discovery to find and message all active pods.
 - **Reliable Messaging**: In-cluster communication is robust and fault-tolerant, ensuring messages are delivered between pods.
+- **Automatic Image Pushing upon Release**: There is a GitHub workflow that leverage buildx to build and push images to a private Docker registry
 
 ## Next Steps
 
