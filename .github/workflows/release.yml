@@ -35,7 +35,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: flikweertvision/messaging-app-exercise
+          images: flikweertvision/msg-app-excercise
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -57,6 +57,7 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: index.docker.io/flikweertvision/messaging-app-exercise
+          subject-name: index.docker.io/flikweertvision/msg-app-excercise
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+          tags: "flikweertvision/msg-app-excercise:${{ github.ref_name }}"
