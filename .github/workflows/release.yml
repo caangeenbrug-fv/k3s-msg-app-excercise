@@ -60,4 +60,3 @@ jobs:
           subject-name: index.docker.io/flikweertvision/msg-app-excercise
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-          tags: "flikweertvision/msg-app-excercise:${{ github.ref_name }}"
