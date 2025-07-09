@@ -57,10 +57,7 @@ helm install traefik traefik/traefik -f values.yaml --wait
 
 ### 4. Build and Deploy the Application
 
-- **Build Docker Images**
-  Build your application images locally.
-
-- **Deploy to the Cluster**
+- **Build and deploy to the Cluster**
   Use the provided deployment script to build and deploy:
 
   ```sh
@@ -71,8 +68,7 @@ helm install traefik traefik/traefik -f values.yaml --wait
 
 ### 5. Accessing the App
 
-- Map any required hostnames (such as those used in Ingress) to `127.0.0.1` in your `/etc/hosts` file if needed.
-- Access the app via your browser or with tools like `curl` at `http://localhost` or the configured hostname.
+- Access the app via your browser or with tools like `curl` at `http://localhost` or the configured hostname. For example like this: `curl -XGET http://messaging-app.localhost/healthcheck`.
 
 ## Key Features Demonstrated
 
