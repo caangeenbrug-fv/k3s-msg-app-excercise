@@ -4,7 +4,7 @@
 docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --tag flikweertvision/msg-app-excercise:latest \
-    .
+    ..
 
 k3d kubeconfig merge messaging-app-exercise  --kubeconfig-switch-context
 

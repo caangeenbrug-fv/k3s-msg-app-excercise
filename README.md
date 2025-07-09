@@ -37,6 +37,8 @@ Note that the trace contains the same order of pods due to the IP sorting explai
 Set up a cluster named `messaging-app-exercise` with 1 control plane and 3 worker nodes, exposing HTTP and HTTPS ports for ingress:
 
 ```sh
+cd ./local-cluster
+
 k3d cluster create messaging-app-exercise \
   --servers 1 \
   --agents 3 \
@@ -62,7 +64,7 @@ helm install traefik traefik/traefik -f values.yaml --wait
   Use the provided deployment script to build and deploy:
 
   ```sh
-  ./local-deploy.sh
+  ./deploy.sh
   ```
 
   This script handles image building and deployment to your local k3d cluster.
